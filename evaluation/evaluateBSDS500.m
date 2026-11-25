@@ -31,7 +31,7 @@ for folder = [edgeFolder, splitFolder, sweepFolder]
         mkdir(folder);
     end
 end
-edgeRows = cell(numel(files) * numel(operators), 8);
+edgeRows = cell(numel(files) * numel(operators), 9);
 splitRows = cell(numel(files), 6);
 sweepRows = cell(0, 5);
 row = 0;
@@ -48,6 +48,7 @@ for index = 1:numel(files)
         sigma = 1.4;
         minimum = 0.005;
         threshold = 0.15;
+        thinContours = false;
         if operator == "Canny"
             threshold = [];
         end
@@ -62,10 +63,13 @@ for index = 1:numel(files)
                 if isnan(threshold)
                     threshold = [];
                 end
+                if ismember('ThinContours', setting.Properties.VariableNames)
+                    thinContours = setting.ThinContours == 1;
+                end
             end
         end
         result = segmentation.edgeObjects(rgb, operator, Threshold=threshold, ...
-            Sigma=sigma, CloseRadius=radius, MinAreaFraction=minimum);
+            Sigma=sigma, CloseRadius=radius, MinAreaFraction=minimum, ThinContours=thinContours);
         edgeSheet{op} = [original, repmat(uint8(result.edgeMap) * 255, 1, 1, 3), im2uint8(result.cutout)];
         row = row + 1;
         used = result.threshold;
@@ -73,7 +77,7 @@ for index = 1:numel(files)
             used = NaN;
         end
         edgeRows(row, :) = {string(file.name), operator, used, sigma, radius, ...
-            minimum, result.found, nnz(result.mask)};
+            minimum, result.found, nnz(result.mask), thinContours};
     end
     imwrite(vertcat(edgeSheet{:}), fullfile(edgeFolder, stem + ".png"));
 
@@ -100,7 +104,7 @@ for index = 1:numel(files)
 end
 
 edgeRuns = cell2table(edgeRows, 'VariableNames', ...
-    {'Image', 'Operator', 'Threshold', 'Sigma', 'CloseRadius', 'MinAreaFraction', 'Found', 'AreaPx'});
+    {'Image', 'Operator', 'Threshold', 'Sigma', 'CloseRadius', 'MinAreaFraction', 'Found', 'AreaPx', 'ThinContours'});
 splitRuns = cell2table(splitRows, 'VariableNames', ...
     {'Image', 'SplitThreshold', 'MergeThreshold', 'MinChildSide', 'InitialRegions', 'FinalRegions'});
 sweeps = cell2table(sweepRows, 'VariableNames', ...

@@ -28,8 +28,8 @@ semanticPage = uitab(tabs, 'Title', 'CamVid semantic', 'Tag', 'Semantic');
 status = uilabel(main, 'Text', 'Open an image to begin.', 'Tag', 'Status');
 
 edgeGrid = uigridlayout(edgePage, [2 3], 'RowHeight', {42, '1x'});
-edgeSettings = uigridlayout(edgeGrid, [1 10], ...
-    'ColumnWidth', {53, 96, 66, 56, 56, 52, 56, 47, 78, 55}, 'Padding', [0 0 0 0]);
+edgeSettings = uigridlayout(edgeGrid, [1 11], ...
+    'ColumnWidth', {53, 96, 66, 56, 56, 52, 56, 47, 78, 55, 112}, 'Padding', [0 0 0 0]);
 edgeSettings.Layout.Column = [1 3];
 uilabel(edgeSettings, 'Text', 'Operator');
 operator = uidropdown(edgeSettings, 'Items', {'Laplace', 'LoG', 'Sobel', 'Prewitt', 'Roberts', 'Canny'}, ...
@@ -45,6 +45,8 @@ closing = uieditfield(edgeSettings, 'numeric', 'Limits', [0 100], ...
     'RoundFractionalValues', 'on', 'Value', 3, 'Tooltip', 'Closing radius in pixels');
 uilabel(edgeSettings, 'Text', 'Min area %');
 area = uieditfield(edgeSettings, 'numeric', 'Limits', [0 100], 'Value', 0.5);
+thinContours = uicheckbox(edgeSettings, 'Text', 'Thin contours', 'Tag', 'ThinContours', ...
+    'Tooltip', 'Thin closed edge bands before extracting an enclosed object');
 edgeOriginal = imageAxes(edgeGrid, 2, 1, 'Original');
 edgeOutput = imageAxes(edgeGrid, 2, 2, 'Edge map');
 cutoutOutput = imageAxes(edgeGrid, 2, 3, 'Object cutout');
@@ -143,7 +145,8 @@ window.Visible = 'on';
                         value = [];
                     end
                     result = segmentation.edgeObjects(rgb, operator.Value, Threshold=value, ...
-                        Sigma=sigma.Value, CloseRadius=closing.Value, MinAreaFraction=area.Value / 100);
+                        Sigma=sigma.Value, CloseRadius=closing.Value, MinAreaFraction=area.Value / 100, ...
+                        ThinContours=thinContours.Value);
                     showImage(edgeOutput, result.edgeMap, 'Edge map');
                     showImage(cutoutOutput, result.cutout, 'Object cutout');
                     if result.found

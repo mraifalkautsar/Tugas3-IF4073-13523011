@@ -8,6 +8,7 @@ arguments
     options.Sigma (1,1) double {mustBeInRange(options.Sigma, 0.3, 10)} = 1.4
     options.CloseRadius (1,1) double {mustBeInteger, mustBeNonnegative} = 3
     options.MinAreaFraction (1,1) double {mustBeInRange(options.MinAreaFraction, 0, 1)} = 0.005
+    options.ThinContours (1,1) logical = false
 end
 
 rgb = segmentation.asRGB(image);
@@ -48,13 +49,17 @@ switch operator
         end
 end
 
-closed = edgeMap;
+contours = edgeMap;
 if options.CloseRadius > 0
-    closed = imclose(closed, strel('disk', options.CloseRadius, 0));
+    contours = imclose(contours, strel('disk', options.CloseRadius, 0));
+end
+if options.ThinContours
+    % Recover pixels occupied by thick edge bands before finding enclosed regions.
+    contours = bwmorph(contours, 'thin', Inf);
 end
 
-% Subtract the edge bands to obtain just the regions enclosed by contours.
-interiors = imfill(closed, 4, 'holes') & ~closed;
+% Keep the interior pixels of enclosed regions.
+interiors = imfill(contours, 4, 'holes') & ~contours;
 components = bwconncomp(interiors, 4);
 mask = false(size(gray));
 if components.NumObjects > 0

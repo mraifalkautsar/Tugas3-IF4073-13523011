@@ -26,6 +26,17 @@ for operator = operators
 end
 end
 
+function testThinContoursPreservesEdgeMap(testCase)
+shape = zeros(65, 67);
+shape(17:49, 19:50) = 1;
+standard = segmentation.edgeObjects(shape, "Canny");
+thinned = segmentation.edgeObjects(shape, "Canny", ThinContours=true);
+verifyEqual(testCase, thinned.edgeMap, standard.edgeMap);
+verifyTrue(testCase, thinned.found);
+overlap = nnz(thinned.mask & logical(shape)) / nnz(thinned.mask | logical(shape));
+verifyGreaterThan(testCase, overlap, 0.65);
+end
+
 function testSplitMerge(testCase)
 uniform = segmentation.splitMerge(ones(31, 47) * 0.3);
 verifyEqual(testCase, uniform.regionCount, 1);
