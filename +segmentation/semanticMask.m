@@ -65,8 +65,8 @@ result = struct('labels', labels, 'colorMask', colorMask, 'overlay', 0.55*rgb + 
 end
 
 function output = runProcess(command, timeout, logPath)
-% Pass each argument directly to WSL so file names never go through a shell.
-args = java.util.ArrayList();
+
+    args = java.util.ArrayList();
 for arg = command
     args.add(java.lang.String(char(arg)));
 end

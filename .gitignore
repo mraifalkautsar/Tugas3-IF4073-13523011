@@ -5,6 +5,5 @@ data/
 artifacts/
 results/
 *.asv
-report/build/
-report/team.local.tex
-report/photos/
+report/
+references/

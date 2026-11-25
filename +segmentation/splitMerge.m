@@ -19,7 +19,6 @@ squares = zeros(0, 1);
 split(1, height, 1, width);
 leafCount = numel(counts);
 
-% Horizontal and vertical changes in the leaf map capture every shared side.
 pairs = [neighborPairs(labels(:, 1:end-1), labels(:, 2:end)); ...
     neighborPairs(labels(1:end-1, :), labels(2:end, :))];
 pairs = unique(sort(pairs, 2), 'rows');
@@ -61,7 +60,6 @@ while head <= numel(queue)
         adjacent(:, keep) = linked;
         adjacent(keep, :) = linked.';
 
-        % Only the new region and its neighbors have changed merge options.
         affected = [keep; find(linked)];
         pending = affected(~queued(affected));
         queue = [queue; pending]; %#ok<AGROW>
@@ -70,7 +68,6 @@ while head <= numel(queue)
     end
 end
 
-% Smaller surviving IDs ensure that each parent root is already resolved.
 for leaf = 1:leafCount
     parent(leaf) = parent(parent(leaf));
 end
@@ -127,7 +124,6 @@ total = integral(bottom+1, right+1) - integral(top, right+1) ...
 end
 
 function sigma = deviation(count, total, squared)
-% The pooled moments include differences between the original region means.
 variance = squared / count - (total / count)^2;
 sigma = sqrt(max(0, variance - 8*eps));
 end

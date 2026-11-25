@@ -30,7 +30,6 @@ switch operator
         radiusSquared = x.^2 + y.^2;
         sigmaSquared = options.Sigma^2;
         kernel = (radiusSquared - 2*sigmaSquared) .* exp(-radiusSquared/(2*sigmaSquared));
-        % Subtract the DC component introduced by truncating the continuous LoG.
         kernel = kernel - mean(kernel(:));
         edgeMap = zeroCrossings(imfilter(gray, kernel, 'replicate', 'conv'), threshold);
     case "Sobel"
@@ -42,7 +41,7 @@ switch operator
     case "Roberts"
         edgeMap = gradientEdges(gray, [1 0; 0 -1], [0 1; -1 0], threshold);
     case "Canny"
-        if max(gray(:)) == min(gray(:))
+        if isequal(threshold, 1) || max(gray(:)) == min(gray(:)) % Canny requires a high threshold below 1.
             edgeMap = false(size(gray));
         else
             edgeMap = edge(gray, 'Canny', threshold, options.Sigma);
@@ -54,11 +53,9 @@ if options.CloseRadius > 0
     contours = imclose(contours, strel('disk', options.CloseRadius, 0));
 end
 if options.ThinContours
-    % Recover pixels occupied by thick edge bands before finding enclosed regions.
     contours = bwmorph(contours, 'thin', Inf);
 end
 
-% Keep the interior pixels of enclosed regions.
 interiors = imfill(contours, 4, 'holes') & ~contours;
 components = bwconncomp(interiors, 4);
 mask = false(size(gray));
@@ -85,6 +82,6 @@ function map = zeroCrossings(response, threshold)
 localLow = imerode(response, true(3));
 localHigh = imdilate(response, true(3));
 strength = localHigh - localLow;
-% A sign change with low contrast is likely to be a noise edge.
+
 map = localLow < 0 & localHigh > 0 & strength > max(32*eps, threshold * max(strength(:)));
 end

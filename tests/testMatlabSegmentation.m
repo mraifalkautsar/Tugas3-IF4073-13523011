@@ -26,6 +26,14 @@ for operator = operators
 end
 end
 
+function testCannyMaximumThreshold(testCase)
+shape = zeros(65, 67);
+shape(17:49, 19:50) = 1;
+result = segmentation.edgeObjects(shape, "Canny", Threshold=1);
+verifyEqual(testCase, result.edgeMap, false(size(shape)));
+verifyFalse(testCase, result.found);
+end
+
 function testThinContoursPreservesEdgeMap(testCase)
 shape = zeros(65, 67);
 shape(17:49, 19:50) = 1;
